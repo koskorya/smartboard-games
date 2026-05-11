@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Smartboard Games</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+:root {
+  --primary: #4361ee;
+  --success: #06d6a0;
+  --warning: #ffd166;
+  --danger: #ef476f;
+  --purple: #7b2cbf;
+  --orange: #fb8500;
+  --bg: #f0f4ff;
+  --text: #2b2d42;
+  --shadow: 0 4px 20px rgba(0,0,0,0.1);
+  --p1: #4361ee;
+  --p1-light: #dbe4ff;
+  --p1-bg: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  --p2: #e63946;
+  --p2-light: #fde8e8;
+  --p2-bg: linear-gradient(135deg, #fee2e2 0%, #fff5f5 100%);
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+
+#header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+#header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-badge {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+#p1-score-display {
+  background: rgba(255,255,255,0.3);
+  color: white;
+}
+
+#p2-score-display {
+  background: var(--danger);
+  color: white;
+}
+
+#turn-indicator {
+  background: var(--warning);
+  color: var(--text);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.header-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.header-btn:hover { background: rgba(255,255,255,0.35); }
+
+/* ── Screens ── */
+.screen {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Menu Screens (shared) ── */
+.menu-screen {
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.menu-screen h2 {
+  font-size: 44px;
+  color: white;
+  text-shadow: 2px 4px 8px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.menu-subtitle {
+  color: rgba(255,255,255,0.85);
+  font-size: 18px;
+  margin-top: -12px;
+  text-align: center;
+}
+
+.back-btn {
+  padding: 10px 24px;
+  border-radius: 25px;
+  border: 3px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover { background: rgba(255,255,255,0.3); }
+
+/* ── Grade Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  max-width: 750px;
+  width: 100%;
+  padding: 0 20px;
+}
+
+.card-grid-wide {
+  max-width: 900px;
+}
+
+.menu-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow);
+}
+
+.menu-card:hover, .menu-card:active {
+  transform: scale(1.04);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+}
+
+.menu-card .card-icon { font-size: 42px; margin-bottom: 8px; }
+.menu-card h3 { font-size: 20px; margin-bottom: 4px; color: var(--text); }
+.menu-card p { font-size: 13px; color: #666; }
+
+/* ── Options Row ── */
+.options-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.pill-btn {
+  padding: 10px 22px;
+  border-radius: 25px;
+  border: 3px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pill-btn.active {
+  background: white;
+  color: var(--purple);
+  border-color: white;
+}
+
+/* ── Pack Tabs ── */
+.pack-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pack-tab {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 2px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pack-tab.active {
+  background: white;
+  color: var(--purple);
+  border-color: white;
+}
+
+/* ── Split Screen ── */
+#game-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.split-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.player-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-panel.p1 { background: var(--p1-bg); }
+.player-panel.p2 { background: var(--p2-bg); }
+.single-panel { background: var(--p1-bg); }
+
+.panel-divider {
+  width: 4px;
+  background: linear-gradient(to bottom, var(--p1), var(--p2));
+  flex-shrink: 0;
+}
+
+.player-label {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 8px;
+  color: white;
+}
+
+.p1 .player-label { background: var(--p1); }
+.p2 .player-label { background: var(--p2); }
+
+.player-score-inline {
+  font-weight: 400;
+  font-size: 15px;
+  opacity: 0.9;
+  margin-left: 8px;
+}
+
+.panel-content {
+  flex: 1;
+  overflow: hidden;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Match Game ── */
+.match-targets-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.match-target {
+  min-width: 70px;
+  min-height: 70px;
+  padding: 6px;
+  border: 3px dashed #ccc;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: #999;
+  background: rgba(255,255,255,0.7);
+  transition: all 0.3s;
+}
+
+.match-target.hover {
+  border-color: var(--primary);
+  background: #e8edff;
+  transform: scale(1.08);
+}
+
+.match-target.matched {
+  border-style: solid;
+  border-color: var(--success);
+  background: #e6fff6;
+  color: var(--success);
+}
+
+.match-sources-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+  align-items: center;
+  align-content: center;
+}
+
+.match-source {
+  min-width: 64px;
+  min-height: 64px;
+  padding: 6px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+  cursor: grab;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow);
+  position: relative;
+  z-index: 10;
+}
+
+.match-source:active { cursor: grabbing; }
+
+.match-source.dragging {
+  transform: scale(1.15);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  z-index: 200;
+  opacity: 0.9;
+}
+
+.match-source.matched {
+  opacity: 0.3;
+  pointer-events: none;
+  transform: scale(0.7);
+}
+
+/* ── Pop Game ── */
+.pop-panel {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pop-prompt {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 8px 20px;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  z-index: 50;
+  white-space: nowrap;
+}
+
+.pop-prompt .target-item {
+  color: var(--danger);
+  font-size: 24px;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  box-shadow: inset -4px -4px 10px rgba(0,0,0,0.1), 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.1s;
+}
+
+.bubble::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 20%;
+  width: 25%;
+  height: 25%;
+  background: rgba(255,255,255,0.4);
+  border-radius: 50%;
+}
+
+.bubble:active { transform: scale(0.9); }
+.bubble.pop-correct { animation: popCorrect 0.4s ease-out forwards; }
+.bubble.pop-wrong { animation: popWrong 0.4s ease-out forwards; }
+
+/* ── Trace Game ── */
+.trace-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.trace-info {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.trace-canvas-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trace-guide {
+  position: absolute;
+  font-size: min(35vh, 25vw);
+  font-weight: 900;
+  color: #e0e5f0;
+  line-height: 1;
+  z-index: 1;
+  pointer-events: none;
+  text-align: center;
+}
+
+.trace-canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.trace-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.trace-btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.15s;
+}
+
+.trace-btn:active { transform: scale(0.95); }
+.trace-btn.clear-btn { background: var(--danger); }
+.trace-btn.next-btn { background: var(--success); }
+
+/* ── Order Game ── */
+.order-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 10px;
+}
+
+.order-progress {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.order-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+}
+
+.order-slot {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px;
+  border: 3px solid #ddd;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ccc;
+  background: rgba(255,255,255,0.7);
+  transition: all 0.3s;
+}
+
+.order-slot.filled {
+  border-color: var(--success);
+  background: #e6fff6;
+  color: var(--success);
+}
+
+.order-slot.current {
+  border-color: var(--primary);
+  background: #e8edff;
+  animation: pulse 1s infinite;
+}
+
+.order-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  align-items: center;
+  align-content: center;
+}
+
+.order-choice {
+  min-width: 56px;
+  min-height: 56px;
+  padding: 6px;
+  border-radius: 14px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s;
+}
+
+.order-choice:active { transform: scale(0.92); }
+.order-choice.used { opacity: 0.2; pointer-events: none; transform: scale(0.7); }
+
+/* ── Turn Transition Overlay ── */
+.turn-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+}
+
+.turn-overlay.active { display: flex; }
+
+.turn-box {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 50px;
+  text-align: center;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+  animation: feedbackPop 0.3s ease-out;
+}
+
+.turn-box h2 { font-size: 36px; margin-bottom: 10px; }
+.turn-box p { font-size: 18px; color: #666; margin-bottom: 20px; }
+
+.turn-box .start-btn {
+  padding: 14px 36px;
+  border-radius: 16px;
+  border: none;
+  color: white;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  background: var(--primary);
+}
+
+/* ── Final Score Overlay ── */
+.final-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+}
+
+.final-overlay.active { display: flex; }
+
+.final-box {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 50px;
+  text-align: center;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+  animation: feedbackPop 0.3s ease-out;
+  max-width: 420px;
+}
+
+.final-box h2 { font-size: 36px; margin-bottom: 6px; }
+.final-box .final-emoji { font-size: 60px; margin-bottom: 10px; }
+.final-box .final-scores { font-size: 22px; margin-bottom: 16px; line-height: 1.6; }
+.final-box .final-scores .winner { color: var(--success); font-weight: 800; }
+
+.final-box .menu-btn {
+  padding: 14px 36px;
+  border-radius: 16px;
+  border: none;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--primary);
+  margin: 0 6px;
+}
+
+.final-box .play-again-btn {
+  padding: 14px 36px;
+  border-radius: 16px;
+  border: none;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--success);
+  margin: 0 6px;
+}
+
+/* ── Stars / Confetti ── */
+.star-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 999;
+  font-size: 28px;
+  animation: starPop 0.8s ease-out forwards;
+}
+
+@keyframes starPop {
+  0% { transform: scale(0) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+  100% { transform: scale(0.5) rotate(360deg); opacity: 0; }
+}
+
+.confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 998;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes popCorrect {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes popWrong {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-15px); }
+  75% { transform: translateX(15px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ── Feedback Overlay ── */
+.feedback-overlay {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+}
+
+.feedback-overlay.active { display: flex; }
+
+.feedback-box {
+  background: white;
+  border-radius: 20px;
+  padding: 30px 36px;
+  text-align: center;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+  animation: feedbackPop 0.3s ease-out;
+  max-width: 90%;
+}
+
+@keyframes feedbackPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.feedback-emoji { font-size: 52px; }
+.feedback-text { font-size: 24px; font-weight: 800; margin: 10px 0; }
+.feedback-sub { font-size: 15px; color: #666; margin-bottom: 14px; }
+
+.feedback-btn {
+  padding: 12px 28px;
+  border-radius: 14px;
+  border: none;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.p1 .feedback-btn { background: var(--p1); }
+.p2 .feedback-btn { background: var(--p2); }
+.single-panel .feedback-btn { background: var(--p1); }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="header" style="display:none">
+    <h1 id="header-title">Smartboard Games</h1>
+    <div id="header-controls">
+      <div class="score-badge" id="p1-score-display">Stars: 0</div>
+      <div class="score-badge" id="p2-score-display" style="display:none">P2: 0</div>
+      <span id="turn-indicator" style="display:none"></span>
+      <button class="header-btn" id="home-btn">Menu</button>
+    </div>
+  </div>
+
+  <!-- Grade Select -->
+  <div class="screen menu-screen active" id="grade-screen">
+    <h2>Smartboard Games</h2>
+    <p class="menu-subtitle">Pick your grade to start!</p>
+    <div class="card-grid" id="grade-cards"></div>
+  </div>
+
+  <!-- Subject Select -->
+  <div class="screen menu-screen" id="subject-screen">
+    <h2 id="subject-title"></h2>
+    <p class="menu-subtitle">Choose a subject</p>
+    <div class="card-grid" id="subject-cards"></div>
+    <button class="back-btn" id="subject-back">Back</button>
+  </div>
+
+  <!-- Game Mode Select -->
+  <div class="screen menu-screen" id="mode-screen">
+    <h2 id="mode-title"></h2>
+    <div class="pack-tabs" id="pack-tabs"></div>
+    <div class="options-row">
+      <div class="options-row" id="difficulty-selector">
+        <button class="pill-btn active" data-diff="easy">Easy</button>
+        <button class="pill-btn" data-diff="medium">Medium</button>
+        <button class="pill-btn" data-diff="hard">Hard</button>
+      </div>
+      <div class="options-row" id="player-selector">
+        <button class="pill-btn active" data-players="solo">1 Player</button>
+        <button class="pill-btn" data-players="split">2P Split</button>
+        <button class="pill-btn" data-players="turns">2P Turns</button>
+      </div>
+    </div>
+    <div class="card-grid card-grid-wide" id="game-modes"></div>
+    <button class="back-btn" id="mode-back">Back</button>
+  </div>
+
+  <!-- Game Screen -->
+  <div class="screen" id="game-screen">
+    <div id="game-area"></div>
+  </div>
+</div>
+
+<!-- Turn Transition -->
+<div class="turn-overlay" id="turn-overlay">
+  <div class="turn-box">
+    <h2 id="turn-overlay-title"></h2>
+    <p id="turn-overlay-sub"></p>
+    <button class="start-btn" id="turn-start-btn">Go!</button>
+  </div>
+</div>
+
+<!-- Final Scores -->
+<div class="final-overlay" id="final-overlay">
+  <div class="final-box">
+    <div class="final-emoji" id="final-emoji"></div>
+    <h2 id="final-title"></h2>
+    <div class="final-scores" id="final-scores"></div>
+    <button class="play-again-btn" id="final-again">Play Again</button>
+    <button class="menu-btn" id="final-menu">Menu</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONTENT DATA
+// ═══════════════════════════════════════════
+const COLORS = ['#4361ee','#ef476f','#06d6a0','#ffd166','#7b2cbf','#fb8500','#e63946','#2ec4b6','#ff006e','#8338ec'];
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+const WORD_MAP = {
+  A:'Apple',B:'Ball',C:'Cat',D:'Dog',E:'Elephant',F:'Fish',G:'Gorilla',H:'Hat',
+  I:'Ice cream',J:'Jellyfish',K:'Kite',L:'Lion',M:'Moon',N:'Nest',O:'Octopus',
+  P:'Penguin',Q:'Queen',R:'Rainbow',S:'Sun',T:'Tree',U:'Umbrella',V:'Violin',
+  W:'Whale',X:'Xylophone',Y:'Yak',Z:'Zebra'
+};
+
+const SHAPE_DATA = [
+  { name: 'circle', emoji: '●', word: 'Circle' },
+  { name: 'square', emoji: '■', word: 'Square' },
+  { name: 'triangle', emoji: '▲', word: 'Triangle' },
+  { name: 'star', emoji: '★', word: 'Star' },
+  { name: 'diamond', emoji: '◆', word: 'Diamond' },
+  { name: 'heart', emoji: '♥', word: 'Heart' },
+];
+
+const CONTENT = {
+  K: {
+    label: 'Kindergarten',
+    icon: '🌟',
+    color: '#06d6a0',
+    subjects: {
+      letters: {
+        label: 'Letters',
+        icon: '📖',
+        packs: {
+          matchCase: {
+            label: 'Uppercase ↔ Lowercase',
+            items: () => ALPHABET,
+            display: l => l,
+            targetDisplay: l => l.toLowerCase(),
+            matchedDisplay: l => l + ' ' + l.toLowerCase(),
+            traceDisplay: (l, diff) => (diff === 'hard' && Math.random() < 0.5) ? l.toLowerCase() : l,
+            traceGuideSize: null,
+            orderSequence: (diff) => {
+              const count = diff === 'easy' ? 6 : diff === 'medium' ? 8 : 10;
+              const start = Math.floor(Math.random() * (26 - count));
+              return ALPHABET.slice(start, start + count);
+            },
+            orderLabel: seq => seq[0] + ' to ' + seq[seq.length - 1],
+            popPrompt: (target) => `Pop <span class="target-item">${target}</span>`,
+            randomDistractor: () => ALPHABET[Math.floor(Math.random() * 26)],
+            modes: ['match', 'pop', 'trace', 'order'],
+            modeLabels: { match: 'Letter Match', pop: 'Letter Pop', trace: 'Letter Trace', order: 'ABC Order' },
+            modeDescs: { match: 'Drag uppercase to lowercase', pop: 'Pop the right letter bubbles', trace: 'Trace letters with your finger', order: 'Put letters in the right order' },
+            modeIcons: { match: '🔤', pop: '🫧', trace: '✏️', order: '🔢' },
+            completeEmoji: { match: '🎉', pop: '🫧', trace: '✏️', order: '🔢' },
+            completeText: { match: 'Great Matching!', pop: 'All Popped!', trace: 'Amazing Tracing!', order: 'Perfect Order!' },
+          },
+        }
+      },
+      math: {
+        label: 'Math',
+        icon: '🔢',
+        packs: {
+          counting: {
+            label: 'Counting (1-10)',
+            items: () => Array.from({length: 10}, (_, i) => i + 1),
+            display: n => String(n),
+            targetDisplay: n => Array(n).fill('●').join(' '),
+            matchedDisplay: n => n + ' = ' + Array(n).fill('●').join(''),
+            traceDisplay: n => String(n),
+            traceGuideSize: null,
+            orderSequence: (diff) => {
+              const count = diff === 'easy' ? 5 : diff === 'medium' ? 7 : 10;
+              const start = Math.floor(Math.random() * Math.max(1, 11 - count));
+              return Array.from({length: count}, (_, i) => start + i + 1);
+            },
+            orderLabel: seq => seq[0] + ' to ' + seq[seq.length - 1],
+            popPrompt: (target) => `Pop <span class="target-item">${target}</span>`,
+            randomDistractor: () => Math.floor(Math.random() * 10) + 1,
+            modes: ['match', 'pop', 'trace', 'order'],
+            modeLabels: { match: 'Number Match', pop: 'Number Pop', trace: 'Number Trace', order: 'Number Order' },
+            modeDescs: { match: 'Match numbers to dot counts', pop: 'Pop the right number bubbles', trace: 'Trace numbers with your finger', order: 'Put numbers in order' },
+            modeIcons: { match: '🔢', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeEmoji: { match: '🎉', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeText: { match: 'Great Counting!', pop: 'All Popped!', trace: 'Nice Tracing!', order: 'Perfect Order!' },
+          },
+          shapes: {
+            label: 'Shapes',
+            items: () => SHAPE_DATA.map(s => s.name),
+            display: s => SHAPE_DATA.find(d => d.name === s).emoji,
+            targetDisplay: s => s.charAt(0).toUpperCase() + s.slice(1),
+            matchedDisplay: s => SHAPE_DATA.find(d => d.name === s).emoji + ' ' + s,
+            traceDisplay: s => s.charAt(0).toUpperCase() + s.slice(1),
+            traceGuideSize: 'min(20vh, 15vw)',
+            orderSequence: (diff) => {
+              const names = SHAPE_DATA.map(s => s.name).sort();
+              const count = diff === 'easy' ? 4 : diff === 'medium' ? 5 : 6;
+              return names.slice(0, count);
+            },
+            orderLabel: seq => 'A-Z order',
+            popPrompt: (target) => `Pop <span class="target-item">${SHAPE_DATA.find(d => d.name === target).emoji}</span> ${target}`,
+            randomDistractor: () => SHAPE_DATA[Math.floor(Math.random() * SHAPE_DATA.length)].name,
+            modes: ['match', 'pop', 'order'],
+            modeLabels: { match: 'Shape Match', pop: 'Shape Pop', order: 'Shape Order' },
+            modeDescs: { match: 'Match shapes to their names', pop: 'Pop the right shape bubbles', order: 'Put shape names in A-Z order' },
+            modeIcons: { match: '▲', pop: '🫧', order: '🔣' },
+            completeEmoji: { match: '🎉', pop: '🫧', order: '🔣' },
+            completeText: { match: 'Great Matching!', pop: 'All Popped!', order: 'Perfect Order!' },
+          },
+          addition: {
+            label: 'Addition',
+            items: () => {
+              const problems = [];
+              for (let a = 0; a <= 5; a++) for (let b = 0; b <= 5; b++) problems.push({ a, b, answer: a + b, display: `${a}+${b}` });
+              return problems;
+            },
+            uniqueByAnswer: true,
+            display: p => p.display,
+            targetDisplay: p => String(p.answer),
+            matchedDisplay: p => p.display + ' = ' + p.answer,
+            traceDisplay: p => String(p.answer),
+            traceGuideSize: null,
+            orderSequence: null,
+            popPrompt: (target) => `Pop the answer: <span class="target-item">${target.display}</span>`,
+            popTargetKey: t => String(t.answer),
+            popBubbleDisplay: (item) => String(item),
+            popItems: () => Array.from({length: 11}, (_, i) => i),
+            popItemKey: item => String(item),
+            randomDistractor: () => Math.floor(Math.random() * 11),
+            modes: ['match', 'pop'],
+            modeLabels: { match: 'Addition Match', pop: 'Addition Pop' },
+            modeDescs: { match: 'Match problems to answers', pop: 'Pop the right answer' },
+            modeIcons: { match: '➕', pop: '🫧' },
+            completeEmoji: { match: '🎉', pop: '🫧' },
+            completeText: { match: 'Great Adding!', pop: 'All Popped!' },
+          },
+        }
+      },
+      sightWords: {
+        label: 'Sight Words',
+        icon: '👁️',
+        packs: {
+          preprimer: {
+            label: 'Pre-Primer',
+            items: () => ['the','and','is','it','you','was','for','on','are','to','in','he','she','we','my','can','see','go','up','not','big','run','red','one','two'],
+            display: w => w,
+            targetDisplay: w => w.split('').map((c,i) => i === 0 ? c : '_').join(''),
+            matchedDisplay: w => w,
+            traceDisplay: w => w,
+            traceGuideSize: 'min(18vh, 12vw)',
+            orderSequence: (diff) => {
+              const words = ['and','are','big','can','for','go','he','in','is','it','my','not','on','one','red','run','see','she','the','to','two','up','was','we','you'];
+              const count = diff === 'easy' ? 4 : diff === 'medium' ? 6 : 8;
+              const start = Math.floor(Math.random() * Math.max(1, words.length - count));
+              return words.slice(start, start + count);
+            },
+            orderLabel: seq => 'A-Z order',
+            popPrompt: (target) => `Pop <span class="target-item">${target}</span>`,
+            randomDistractor: function() {
+              const words = this.items();
+              return words[Math.floor(Math.random() * words.length)];
+            },
+            modes: ['match', 'pop', 'trace', 'order'],
+            modeLabels: { match: 'Word Match', pop: 'Word Pop', trace: 'Word Trace', order: 'Word Order' },
+            modeDescs: { match: 'Match words to their first letter hint', pop: 'Pop the right word bubbles', trace: 'Trace words with your finger', order: 'Put words in A-Z order' },
+            modeIcons: { match: '📖', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeEmoji: { match: '🎉', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeText: { match: 'Great Reading!', pop: 'All Popped!', trace: 'Nice Writing!', order: 'Perfect Order!' },
+          },
+        }
+      },
+    }
+  },
+  1: {
+    label: '1st Grade',
+    icon: '🚀',
+    color: '#4361ee',
+    subjects: {
+      letters: {
+        label: 'Letters & Reading',
+        icon: '📖',
+        packs: {
+          matchCase: {
+            label: 'Uppercase ↔ Lowercase',
+            items: () => ALPHABET,
+            display: l => l,
+            targetDisplay: l => l.toLowerCase(),
+            matchedDisplay: l => l + ' ' + l.toLowerCase(),
+            traceDisplay: (l, diff) => (diff === 'hard' && Math.random() < 0.5) ? l.toLowerCase() : l,
+            traceGuideSize: null,
+            orderSequence: (diff) => {
+              const count = diff === 'easy' ? 8 : diff === 'medium' ? 13 : 18;
+              const start = Math.floor(Math.random() * (26 - count));
+              return ALPHABET.slice(start, start + count);
+            },
+            orderLabel: seq => seq[0] + ' to ' + seq[seq.length - 1],
+            popPrompt: (target) => `Pop <span class="target-item">${target}</span>`,
+            randomDistractor: () => ALPHABET[Math.floor(Math.random() * 26)],
+            modes: ['match', 'pop', 'trace', 'order'],
+            modeLabels: { match: 'Letter Match', pop: 'Letter Pop', trace: 'Letter Trace', order: 'ABC Order' },
+            modeDescs: { match: 'Drag uppercase to lowercase', pop: 'Pop the right letter bubbles', trace: 'Trace letters with your finger', order: 'Put letters in the right order' },
+            modeIcons: { match: '🔤', pop: '🫧', trace: '✏️', order: '🔢' },
+            completeEmoji: { match: '🎉', pop: '🫧', trace: '✏️', order: '🔢' },
+            completeText: { match: 'Great Matching!', pop: 'All Popped!', trace: 'Amazing Tracing!', order: 'Perfect Order!' },
+          },
+        }
+      },
+      math: {
+        label: 'Math',
+        icon: '🔢',
+        packs: {
+          addition: {
+            label: 'Addition (up to 20)',
+            items: () => {
+              const problems = [];
+              for (let a = 0; a <= 10; a++) for (let b = 0; b <= 10; b++) if (a + b <= 20) problems.push({ a, b, answer: a + b, display: `${a}+${b}` });
+              return problems;
+            },
+            uniqueByAnswer: true,
+            display: p => p.display,
+            targetDisplay: p => String(p.answer),
+            matchedDisplay: p => p.display + ' = ' + p.answer,
+            traceDisplay: p => String(p.answer),
+            traceGuideSize: null,
+            orderSequence: null,
+            popPrompt: (target) => `Pop the answer: <span class="target-item">${target.display}</span>`,
+            popTargetKey: t => String(t.answer),
+            popBubbleDisplay: item => String(item),
+            popItems: () => Array.from({length: 21}, (_, i) => i),
+            popItemKey: item => String(item),
+            randomDistractor: () => Math.floor(Math.random() * 21),
+            modes: ['match', 'pop'],
+            modeLabels: { match: 'Addition Match', pop: 'Addition Pop' },
+            modeDescs: { match: 'Match problems to answers', pop: 'Pop the right answer' },
+            modeIcons: { match: '➕', pop: '🫧' },
+            completeEmoji: { match: '🎉', pop: '🫧' },
+            completeText: { match: 'Great Adding!', pop: 'All Popped!' },
+          },
+          subtraction: {
+            label: 'Subtraction (up to 10)',
+            items: () => {
+              const problems = [];
+              for (let a = 1; a <= 10; a++) for (let b = 0; b <= a; b++) problems.push({ a, b, answer: a - b, display: `${a}-${b}` });
+              return problems;
+            },
+            uniqueByAnswer: true,
+            display: p => p.display,
+            targetDisplay: p => String(p.answer),
+            matchedDisplay: p => p.display + ' = ' + p.answer,
+            traceDisplay: p => String(p.answer),
+            traceGuideSize: null,
+            orderSequence: null,
+            popPrompt: (target) => `Pop the answer: <span class="target-item">${target.display}</span>`,
+            popTargetKey: t => String(t.answer),
+            popBubbleDisplay: item => String(item),
+            popItems: () => Array.from({length: 11}, (_, i) => i),
+            popItemKey: item => String(item),
+            randomDistractor: () => Math.floor(Math.random() * 11),
+            modes: ['match', 'pop'],
+            modeLabels: { match: 'Subtraction Match', pop: 'Subtraction Pop' },
+            modeDescs: { match: 'Match problems to answers', pop: 'Pop the right answer' },
+            modeIcons: { match: '➖', pop: '🫧' },
+            completeEmoji: { match: '🎉', pop: '🫧' },
+            completeText: { match: 'Great Subtracting!', pop: 'All Popped!' },
+          },
+        }
+      },
+      sightWords: {
+        label: 'Sight Words',
+        icon: '👁️',
+        packs: {
+          primer: {
+            label: 'Primer',
+            items: () => ['all','am','at','ate','be','black','brown','but','came','did','do','eat','four','get','good','have','into','like','must','new','no','now','our','out','please','pretty','ran','ride','say','soon','that','there','they','this','too','under','want','well','went','what','white','who','will','with','yes'],
+            display: w => w,
+            targetDisplay: w => w.split('').map((c,i) => i === 0 ? c : '_').join(''),
+            matchedDisplay: w => w,
+            traceDisplay: w => w,
+            traceGuideSize: 'min(16vh, 10vw)',
+            orderSequence: (diff) => {
+              const words = ['all','am','at','ate','be','but','came','did','do','eat','get','good','have','into','like','must','new','no','now','our','out','ran','say','soon','that','there','they','this','too','want','well','went','what','who','will','with','yes'];
+              const count = diff === 'easy' ? 5 : diff === 'medium' ? 7 : 10;
+              const start = Math.floor(Math.random() * Math.max(1, words.length - count));
+              return words.slice(start, start + count);
+            },
+            orderLabel: seq => 'A-Z order',
+            popPrompt: (target) => `Pop <span class="target-item">${target}</span>`,
+            randomDistractor: function() {
+              const words = this.items();
+              return words[Math.floor(Math.random() * words.length)];
+            },
+            modes: ['match', 'pop', 'trace', 'order'],
+            modeLabels: { match: 'Word Match', pop: 'Word Pop', trace: 'Word Trace', order: 'Word Order' },
+            modeDescs: { match: 'Match words to their hints', pop: 'Pop the right word bubbles', trace: 'Trace words with your finger', order: 'Put words in A-Z order' },
+            modeIcons: { match: '📖', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeEmoji: { match: '🎉', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeText: { match: 'Great Reading!', pop: 'All Popped!', trace: 'Nice Writing!', order: 'Perfect Order!' },
+          },
+        }
+      },
+    }
+  },
+  2: {
+    label: '2nd Grade',
+    icon: '⭐',
+    color: '#7b2cbf',
+    subjects: {
+      math: {
+        label: 'Math',
+        icon: '🔢',
+        packs: {
+          addition: {
+            label: 'Addition (up to 100)',
+            items: () => {
+              const problems = [];
+              for (let i = 0; i < 60; i++) {
+                const a = Math.floor(Math.random() * 50) + 1;
+                const b = Math.floor(Math.random() * (100 - a)) + 1;
+                problems.push({ a, b, answer: a + b, display: `${a}+${b}` });
+              }
+              return problems;
+            },
+            uniqueByAnswer: true,
+            display: p => p.display,
+            targetDisplay: p => String(p.answer),
+            matchedDisplay: p => p.display + ' = ' + p.answer,
+            traceDisplay: p => String(p.answer),
+            traceGuideSize: 'min(18vh, 12vw)',
+            orderSequence: null,
+            popPrompt: (target) => `Pop the answer: <span class="target-item">${target.display}</span>`,
+            popTargetKey: t => String(t.answer),
+            popBubbleDisplay: item => String(item),
+            popItems: () => Array.from({length: 101}, (_, i) => i),
+            popItemKey: item => String(item),
+            randomDistractor: () => Math.floor(Math.random() * 101),
+            modes: ['match', 'pop'],
+            modeLabels: { match: 'Addition Match', pop: 'Addition Pop' },
+            modeDescs: { match: 'Match problems to answers', pop: 'Pop the right answer' },
+            modeIcons: { match: '➕', pop: '🫧' },
+            completeEmoji: { match: '🎉', pop: '🫧' },
+            completeText: { match: 'Great Adding!', pop: 'All Popped!' },
+          },
+          subtraction: {
+            label: 'Subtraction (up to 100)',
+            items: () => {
+              const problems = [];
+              for (let i = 0; i < 60; i++) {
+                const a = Math.floor(Math.random() * 99) + 2;
+                const b = Math.floor(Math.random() * a) + 1;
+                problems.push({ a, b, answer: a - b, display: `${a}-${b}` });
+              }
+              return problems;
+            },
+            uniqueByAnswer: true,
+            display: p => p.display,
+            targetDisplay: p => String(p.answer),
+            matchedDisplay: p => p.display + ' = ' + p.answer,
+            traceDisplay: p => String(p.answer),
+            traceGuideSize: 'min(18vh, 12vw)',
+            orderSequence: null,
+            popPrompt: (target) => `Pop the answer: <span class="target-item">${target.display}</span>`,
+            popTargetKey: t => String(t.answer),
+            popBubbleDisplay: item => String(item),
+            popItems: () => Array.from({length: 101}, (_, i) => i),
+            popItemKey: item => String(item),
+            randomDistractor: () => Math.floor(Math.random() * 101),
+            modes: ['match', 'pop'],
+            modeLabels: { match: 'Subtraction Match', pop: 'Subtraction Pop' },
+            modeDescs: { match: 'Match problems to answers', pop: 'Pop the right answer' },
+            modeIcons: { match: '➖', pop: '🫧' },
+            completeEmoji: { match: '🎉', pop: '🫧' },
+            completeText: { match: 'Great Subtracting!', pop: 'All Popped!' },
+          },
+          multiplication: {
+            label: 'Multiplication (1-5)',
+            items: () => {
+              const problems = [];
+              for (let a = 1; a <= 5; a++) for (let b = 1; b <= 5; b++) problems.push({ a, b, answer: a * b, display: `${a}×${b}` });
+              return problems;
+            },
+            uniqueByAnswer: true,
+            display: p => p.display,
+            targetDisplay: p => String(p.answer),
+            matchedDisplay: p => p.display + ' = ' + p.answer,
+            traceDisplay: p => String(p.answer),
+            traceGuideSize: null,
+            orderSequence: null,
+            popPrompt: (target) => `Pop the answer: <span class="target-item">${target.display}</span>`,
+            popTargetKey: t => String(t.answer),
+            popBubbleDisplay: item => String(item),
+            popItems: () => Array.from({length: 26}, (_, i) => i + 1),
+            popItemKey: item => String(item),
+            randomDistractor: () => Math.floor(Math.random() * 25) + 1,
+            modes: ['match', 'pop'],
+            modeLabels: { match: 'Multiply Match', pop: 'Multiply Pop' },
+            modeDescs: { match: 'Match problems to answers', pop: 'Pop the right answer' },
+            modeIcons: { match: '✖', pop: '🫧' },
+            completeEmoji: { match: '🎉', pop: '🫧' },
+            completeText: { match: 'Great Multiplying!', pop: 'All Popped!' },
+          },
+        }
+      },
+      sightWords: {
+        label: 'Sight Words',
+        icon: '👁️',
+        packs: {
+          secondGrade: {
+            label: '2nd Grade Words',
+            items: () => ['always','around','because','been','before','best','both','buy','call','cold','does','don\'t','fast','first','five','found','gave','goes','green','its','made','many','off','or','pull','read','right','sing','sit','sleep','tell','their','these','those','upon','us','use','very','wash','which','why','wish','work','would','write'],
+            display: w => w,
+            targetDisplay: w => w.split('').map((c,i) => i === 0 ? c : '_').join(''),
+            matchedDisplay: w => w,
+            traceDisplay: w => w,
+            traceGuideSize: 'min(14vh, 9vw)',
+            orderSequence: (diff) => {
+              const words = ['always','around','because','been','before','best','both','buy','call','cold','does','fast','first','five','found','gave','goes','green','its','made','many','off','or','pull','read','right','sing','sit','sleep','tell','their','these','those','upon','us','use','very','wash','which','why','wish','work','would','write'];
+              const count = diff === 'easy' ? 5 : diff === 'medium' ? 7 : 10;
+              const start = Math.floor(Math.random() * Math.max(1, words.length - count));
+              return words.slice(start, start + count);
+            },
+            orderLabel: seq => 'A-Z order',
+            popPrompt: (target) => `Pop <span class="target-item">${target}</span>`,
+            randomDistractor: function() {
+              const words = this.items();
+              return words[Math.floor(Math.random() * words.length)];
+            },
+            modes: ['match', 'pop', 'trace', 'order'],
+            modeLabels: { match: 'Word Match', pop: 'Word Pop', trace: 'Word Trace', order: 'Word Order' },
+            modeDescs: { match: 'Match words to their hints', pop: 'Pop the right word bubbles', trace: 'Trace words with your finger', order: 'Put words in A-Z order' },
+            modeIcons: { match: '📖', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeEmoji: { match: '🎉', pop: '🫧', trace: '✏️', order: '🔣' },
+            completeText: { match: 'Great Reading!', pop: 'All Popped!', trace: 'Nice Writing!', order: 'Perfect Order!' },
+          },
+        }
+      },
+    }
+  },
+};
+
+
+// ═══════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════
+let difficulty = 'easy';
+let playerMode = 'solo';
+let currentGrade = null;
+let currentSubject = null;
+let currentPackKey = null;
+let currentMode = null;
+let playerScores = [0, 0];
+let playerStates = [{}, {}];
+let popTimers = [[], []];
+let popFrames = [null, null];
+
+let turnState = {
+  currentPlayer: 0,
+  roundsPerPlayer: 3,
+  roundsCompleted: [0, 0],
+  scores: [0, 0],
+  active: false,
+};
+
+function getActivePack() {
+  return CONTENT[currentGrade].subjects[currentSubject].packs[currentPackKey];
+}
+
+function getItemCount() {
+  if (playerMode === 'split') return difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 6;
+  return difficulty === 'easy' ? 4 : difficulty === 'medium' ? 6 : 8;
+}
+
+function getRandomItems(pack, count) {
+  const allItems = shuffle(pack.items());
+  if (pack.uniqueByAnswer) {
+    const seen = new Set();
+    const result = [];
+    for (const item of allItems) {
+      const key = String(item.answer);
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(item);
+        if (result.length >= count) break;
+      }
+    }
+    return result;
+  }
+  return allItems.slice(0, Math.min(count, allItems.length));
+}
+
+
+// ═══════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════
+function playTone(freq, duration, type = 'sine') {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+
+function playCorrect() {
+  playTone(523, 0.15);
+  setTimeout(() => playTone(659, 0.15), 100);
+  setTimeout(() => playTone(784, 0.2), 200);
+}
+
+function playWrong() { playTone(200, 0.3, 'sawtooth'); }
+
+function playComplete() {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.25), i * 120));
+}
+
+
+// ═══════════════════════════════════════════
+// VISUAL EFFECTS
+// ═══════════════════════════════════════════
+function spawnStars(x, y, count = 5) {
+  const emojis = ['⭐','🌟','✨','💫'];
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'star-burst';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = (x + (Math.random() - 0.5) * 80) + 'px';
+    el.style.top = (y + (Math.random() - 0.5) * 80) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+}
+
+function spawnConfetti(playerIdx) {
+  const colors = ['#ef476f','#ffd166','#06d6a0','#118ab2','#7b2cbf','#fb8500'];
+  const panel = (playerMode === 'split' && playerIdx != null) ? getPanel(playerIdx) : null;
+  const rect = panel ? panel.getBoundingClientRect() : { left: 0, width: window.innerWidth, top: 0 };
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.left = (rect.left + Math.random() * rect.width) + 'px';
+    el.style.top = (rect.top - 20) + 'px';
+    el.style.animation = `confettiFall ${1 + Math.random() * 2}s ease-in forwards`;
+    el.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+}
+
+
+// ═══════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function randomColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
+
+function itemKey(pack, item) {
+  if (typeof item === 'object') return item.display + '=' + item.answer;
+  return String(item);
+}
+
+function addScore(playerIdx, pts) {
+  playerScores[playerIdx] += pts;
+  if (turnState.active) turnState.scores[turnState.currentPlayer] += pts;
+  updateScoreDisplays();
+}
+
+function updateScoreDisplays() {
+  const p1El = document.getElementById('p1-score-display');
+  const p2El = document.getElementById('p2-score-display');
+
+  if (playerMode === 'solo') {
+    p1El.textContent = `Stars: ${playerScores[0]}`;
+  } else if (playerMode === 'split') {
+    p1El.textContent = `P1: ${playerScores[0]}`;
+    p2El.textContent = `P2: ${playerScores[1]}`;
+  } else {
+    p1El.textContent = `P1: ${turnState.scores[0]}`;
+    p2El.textContent = `P2: ${turnState.scores[1]}`;
+  }
+}
+
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const header = document.getElementById('header');
+  const isGame = id === 'game-screen';
+  header.style.display = isGame ? 'flex' : 'none';
+  document.getElementById('p2-score-display').style.display = (isGame && playerMode !== 'solo') ? '' : 'none';
+  document.getElementById('turn-indicator').style.display = (isGame && playerMode === 'turns') ? '' : 'none';
+}
+
+function goHome() {
+  currentMode = null;
+  turnState.active = false;
+  stopAllPopGames();
+  document.getElementById('turn-overlay').classList.remove('active');
+  document.getElementById('final-overlay').classList.remove('active');
+  showScreen('grade-screen');
+}
+
+function showPanelFeedback(panel, emoji, text, sub, callback) {
+  let overlay = panel.querySelector('.feedback-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'feedback-overlay';
+    overlay.innerHTML = `
+      <div class="feedback-box">
+        <div class="feedback-emoji"></div>
+        <div class="feedback-text"></div>
+        <div class="feedback-sub"></div>
+        <button class="feedback-btn">Continue</button>
+      </div>`;
+    panel.appendChild(overlay);
+  }
+  overlay.querySelector('.feedback-emoji').textContent = emoji;
+  overlay.querySelector('.feedback-text').textContent = text;
+  overlay.querySelector('.feedback-sub').textContent = sub;
+  overlay.classList.add('active');
+  overlay.querySelector('.feedback-btn').onclick = () => {
+    overlay.classList.remove('active');
+    if (callback) callback();
+  };
+}
+
+
+// ═══════════════════════════════════════════
+// BUILD PANELS
+// ═══════════════════════════════════════════
+function buildGameArea() {
+  const area = document.getElementById('game-area');
+  area.innerHTML = '';
+
+  if (playerMode === 'split') {
+    const container = document.createElement('div');
+    container.className = 'split-container';
+
+    const p1 = document.createElement('div');
+    p1.className = 'player-panel p1';
+    p1.id = 'panel-0';
+    p1.innerHTML = `<div class="player-label">Player 1 <span class="player-score-inline" id="p1-inline"></span></div><div class="panel-content"></div>`;
+
+    const divider = document.createElement('div');
+    divider.className = 'panel-divider';
+
+    const p2 = document.createElement('div');
+    p2.className = 'player-panel p2';
+    p2.id = 'panel-1';
+    p2.innerHTML = `<div class="player-label">Player 2 <span class="player-score-inline" id="p2-inline"></span></div><div class="panel-content"></div>`;
+
+    container.appendChild(p1);
+    container.appendChild(divider);
+    container.appendChild(p2);
+    area.appendChild(container);
+  } else {
+    const panel = document.createElement('div');
+    panel.className = 'player-panel single-panel';
+    panel.id = 'panel-0';
+    panel.innerHTML = '<div class="panel-content"></div>';
+    area.appendChild(panel);
+  }
+}
+
+function getPanelContent(playerIdx) {
+  return document.querySelector(`#panel-${playerIdx} .panel-content`);
+}
+
+function getPanel(playerIdx) {
+  return document.getElementById(`panel-${playerIdx}`);
+}
+
+
+// ═══════════════════════════════════════════
+// MENU SYSTEM
+// ═══════════════════════════════════════════
+function buildGradeScreen() {
+  const container = document.getElementById('grade-cards');
+  container.innerHTML = '';
+  for (const [key, grade] of Object.entries(CONTENT)) {
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    card.innerHTML = `<div class="card-icon">${grade.icon}</div><h3>${grade.label}</h3><p>${Object.keys(grade.subjects).length} subjects</p>`;
+    card.addEventListener('pointerdown', () => {
+      currentGrade = key;
+      buildSubjectScreen();
+      showScreen('subject-screen');
+    });
+    container.appendChild(card);
+  }
+}
+
+function buildSubjectScreen() {
+  const grade = CONTENT[currentGrade];
+  document.getElementById('subject-title').textContent = grade.label;
+  const container = document.getElementById('subject-cards');
+  container.innerHTML = '';
+  for (const [key, subject] of Object.entries(grade.subjects)) {
+    const packCount = Object.keys(subject.packs).length;
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    card.innerHTML = `<div class="card-icon">${subject.icon}</div><h3>${subject.label}</h3><p>${packCount} ${packCount === 1 ? 'activity' : 'activities'}</p>`;
+    card.addEventListener('pointerdown', () => {
+      currentSubject = key;
+      const packKeys = Object.keys(subject.packs);
+      currentPackKey = packKeys[0];
+      buildModeScreen();
+      showScreen('mode-screen');
+    });
+    container.appendChild(card);
+  }
+}
+
+function buildModeScreen() {
+  const subject = CONTENT[currentGrade].subjects[currentSubject];
+  document.getElementById('mode-title').textContent = subject.label;
+
+  const tabsContainer = document.getElementById('pack-tabs');
+  tabsContainer.innerHTML = '';
+  const packKeys = Object.keys(subject.packs);
+
+  if (packKeys.length > 1) {
+    for (const key of packKeys) {
+      const tab = document.createElement('button');
+      tab.className = 'pack-tab' + (key === currentPackKey ? ' active' : '');
+      tab.textContent = subject.packs[key].label;
+      tab.addEventListener('pointerdown', () => {
+        currentPackKey = key;
+        tabsContainer.querySelectorAll('.pack-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        buildGameModeCards();
+      });
+      tabsContainer.appendChild(tab);
+    }
+  }
+
+  buildGameModeCards();
+}
+
+function buildGameModeCards() {
+  const pack = getActivePack();
+  const container = document.getElementById('game-modes');
+  container.innerHTML = '';
+
+  for (const mode of pack.modes) {
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    card.innerHTML = `
+      <div class="card-icon">${pack.modeIcons[mode]}</div>
+      <h3>${pack.modeLabels[mode]}</h3>
+      <p>${pack.modeDescs[mode]}</p>`;
+    card.addEventListener('pointerdown', () => startGame(mode));
+    container.appendChild(card);
+  }
+}
+
+function startGame(mode) {
+  currentMode = mode;
+  playerScores = [0, 0];
+  playerStates = [{}, {}];
+  turnState.scores = [0, 0];
+  turnState.roundsCompleted = [0, 0];
+  turnState.active = false;
+  updateScoreDisplays();
+  showScreen('game-screen');
+  buildGameArea();
+
+  const pack = getActivePack();
+  document.getElementById('header-title').textContent = pack.modeLabels[mode];
+
+  if (playerMode === 'turns') {
+    turnState.active = true;
+    turnState.currentPlayer = 0;
+    turnState.roundsPerPlayer = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 5 : 8;
+    updateTurnIndicator();
+    showTurnTransition(0, () => startGameForPlayer(mode, 0, pack));
+  } else if (playerMode === 'split') {
+    startGameForPlayer(mode, 0, pack);
+    startGameForPlayer(mode, 1, pack);
+  } else {
+    startGameForPlayer(mode, 0, pack);
+  }
+}
+
+function startGameForPlayer(mode, playerIdx, pack) {
+  if (mode === 'match') startMatchForPlayer(playerIdx, pack);
+  else if (mode === 'pop') startPopForPlayer(playerIdx, pack);
+  else if (mode === 'trace') startTraceForPlayer(playerIdx, pack);
+  else if (mode === 'order') startOrderForPlayer(playerIdx, pack);
+}
+
+
+// ═══════════════════════════════════════════
+// TURN-BASED MULTIPLAYER
+// ═══════════════════════════════════════════
+function updateTurnIndicator() {
+  const el = document.getElementById('turn-indicator');
+  if (!turnState.active) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const p = turnState.currentPlayer + 1;
+  const round = turnState.roundsCompleted[turnState.currentPlayer] + 1;
+  el.textContent = `P${p} - Round ${round}/${turnState.roundsPerPlayer}`;
+}
+
+function showTurnTransition(playerIdx, callback) {
+  const overlay = document.getElementById('turn-overlay');
+  const title = document.getElementById('turn-overlay-title');
+  const sub = document.getElementById('turn-overlay-sub');
+  const btn = document.getElementById('turn-start-btn');
+
+  title.textContent = `Player ${playerIdx + 1}'s Turn!`;
+  const round = turnState.roundsCompleted[playerIdx] + 1;
+  sub.textContent = `Round ${round} of ${turnState.roundsPerPlayer}`;
+  btn.style.background = playerIdx === 0 ? 'var(--p1)' : 'var(--p2)';
+
+  overlay.classList.add('active');
+  btn.onclick = () => {
+    overlay.classList.remove('active');
+    callback();
+  };
+}
+
+function onRoundComplete(playerIdx) {
+  if (!turnState.active) return;
+  turnState.roundsCompleted[playerIdx]++;
+
+  if (turnState.roundsCompleted[0] >= turnState.roundsPerPlayer &&
+      turnState.roundsCompleted[1] >= turnState.roundsPerPlayer) {
+    showFinalScores();
+    return;
+  }
+
+  const nextPlayer = turnState.roundsCompleted[turnState.currentPlayer] >= turnState.roundsPerPlayer
+    ? (turnState.currentPlayer === 0 ? 1 : 0)
+    : (turnState.currentPlayer === 0 ? 1 : 0);
+
+  if (turnState.roundsCompleted[nextPlayer] >= turnState.roundsPerPlayer) {
+    turnState.currentPlayer = turnState.currentPlayer;
+  } else {
+    turnState.currentPlayer = nextPlayer;
+  }
+
+  updateTurnIndicator();
+  updateScoreDisplays();
+
+  const pack = getActivePack();
+  showTurnTransition(turnState.currentPlayer, () => {
+    startGameForPlayer(currentMode, 0, pack);
+  });
+}
+
+function showFinalScores() {
+  turnState.active = false;
+  spawnConfetti();
+  playComplete();
+
+  const overlay = document.getElementById('final-overlay');
+  const emoji = document.getElementById('final-emoji');
+  const title = document.getElementById('final-title');
+  const scores = document.getElementById('final-scores');
+
+  const s1 = turnState.scores[0];
+  const s2 = turnState.scores[1];
+  let winner;
+  if (s1 > s2) { winner = 'Player 1 Wins!'; emoji.textContent = '🏆'; }
+  else if (s2 > s1) { winner = 'Player 2 Wins!'; emoji.textContent = '🏆'; }
+  else { winner = "It's a Tie!"; emoji.textContent = '🤝'; }
+
+  title.textContent = winner;
+  scores.innerHTML = `
+    <div ${s1 >= s2 ? 'class="winner"' : ''}>Player 1: ${s1} stars</div>
+    <div ${s2 >= s1 ? 'class="winner"' : ''}>Player 2: ${s2} stars</div>`;
+
+  overlay.classList.add('active');
+}
+
+document.getElementById('final-again').addEventListener('pointerdown', () => {
+  document.getElementById('final-overlay').classList.remove('active');
+  startGame(currentMode);
+});
+
+document.getElementById('final-menu').addEventListener('pointerdown', () => {
+  document.getElementById('final-overlay').classList.remove('active');
+  goHome();
+});
+
+
+// ═══════════════════════════════════════════
+// GAME 1: MATCH (Drag & Drop)
+// ═══════════════════════════════════════════
+function startMatchForPlayer(playerIdx, pack) {
+  const content = getPanelContent(playerIdx);
+  const items = getRandomItems(pack, getItemCount());
+  playerStates[playerIdx] = { items, matched: 0, total: items.length };
+
+  const targetsHtml = shuffle([...items]).map((item, i) =>
+    `<div class="match-target" data-idx="${i}" data-key="${itemKey(pack, item)}" data-player="${playerIdx}">${pack.targetDisplay(item)}</div>`
+  ).join('');
+
+  const sourcesHtml = shuffle([...items]).map((item, i) =>
+    `<div class="match-source" data-idx="${i}" data-key="${itemKey(pack, item)}" data-player="${playerIdx}" style="background:${randomColor()}">${pack.display(item)}</div>`
+  ).join('');
+
+  content.innerHTML = `
+    <div style="text-align:center;font-size:16px;font-weight:700;padding:4px 0">Drag to match!</div>
+    <div class="match-targets-row">${targetsHtml}</div>
+    <div class="match-sources-row">${sourcesHtml}</div>
+  `;
+
+  content.querySelectorAll('.match-source').forEach(el => initDraggable(el, playerIdx, pack, items));
+}
+
+function initDraggable(el, playerIdx, pack, items) {
+  let offsetX, offsetY, isDragging = false, pointerId = null;
+
+  function onStart(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    isDragging = true;
+    pointerId = e.pointerId;
+    el.setPointerCapture(e.pointerId);
+
+    const rect = el.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+
+    el.classList.add('dragging');
+    el.style.position = 'fixed';
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+    el.style.width = rect.width + 'px';
+    el.style.height = rect.height + 'px';
+    el.style.zIndex = 200;
+  }
+
+  function onMove(e) {
+    if (!isDragging || e.pointerId !== pointerId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    el.style.left = (e.clientX - offsetX) + 'px';
+    el.style.top = (e.clientY - offsetY) + 'px';
+
+    const panel = getPanel(playerIdx);
+    panel.querySelectorAll('.match-target').forEach(t => {
+      if (t.classList.contains('matched')) return;
+      const r = t.getBoundingClientRect();
+      t.classList.toggle('hover', e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom);
+    });
+  }
+
+  function onEnd(e) {
+    if (!isDragging || e.pointerId !== pointerId) return;
+    isDragging = false;
+    pointerId = null;
+    el.classList.remove('dragging');
+
+    let dropped = false;
+    const panel = getPanel(playerIdx);
+    const srcKey = el.dataset.key;
+
+    panel.querySelectorAll('.match-target').forEach(t => {
+      t.classList.remove('hover');
+      const r = t.getBoundingClientRect();
+      if (e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom) {
+        if (t.dataset.key === srcKey && !t.classList.contains('matched')) {
+          const item = items.find(it => itemKey(pack, it) === srcKey);
+          t.classList.add('matched');
+          t.textContent = pack.matchedDisplay(item);
+          el.classList.add('matched');
+          dropped = true;
+          playerStates[playerIdx].matched++;
+          addScore(playerIdx, 1);
+          playCorrect();
+          spawnStars(e.clientX, e.clientY);
+
+          if (playerStates[playerIdx].matched === playerStates[playerIdx].total) {
+            setTimeout(() => {
+              spawnConfetti(playerIdx);
+              playComplete();
+              const label = playerMode === 'split' ? `Player ${playerIdx + 1}: ` : '';
+              showPanelFeedback(panel,
+                pack.completeEmoji.match,
+                label + pack.completeText.match,
+                `Matched all ${playerStates[playerIdx].total}!`,
+                () => {
+                  if (turnState.active) { onRoundComplete(turnState.currentPlayer); }
+                  else { startMatchForPlayer(playerIdx, pack); }
+                });
+            }, 400);
+          }
+        } else if (t.dataset.key !== srcKey) {
+          playWrong();
+        }
+      }
+    });
+
+    if (!dropped) {
+      el.style.position = '';
+      el.style.left = '';
+      el.style.top = '';
+      el.style.width = '';
+      el.style.height = '';
+      el.style.zIndex = '';
+    }
+  }
+
+  el.addEventListener('pointerdown', onStart);
+  el.addEventListener('pointermove', onMove);
+  el.addEventListener('pointerup', onEnd);
+  el.addEventListener('pointercancel', onEnd);
+}
+
+
+// ═══════════════════════════════════════════
+// GAME 2: POP (Tap Bubbles)
+// ═══════════════════════════════════════════
+function stopAllPopGames() {
+  for (let p = 0; p < 2; p++) {
+    if (playerStates[p] && playerStates[p].popActive) playerStates[p].popActive = false;
+    if (popFrames[p]) { cancelAnimationFrame(popFrames[p]); popFrames[p] = null; }
+    popTimers[p].forEach(t => clearTimeout(t));
+    popTimers[p] = [];
+  }
+}
+
+function pickPopTarget(pack) {
+  const allItems = pack.items();
+  const target = allItems[Math.floor(Math.random() * allItems.length)];
+  const targetKey = pack.popTargetKey ? pack.popTargetKey(target) : itemKey(pack, target);
+  return { target, targetKey };
+}
+
+function startPopForPlayer(playerIdx, pack) {
+  if (playerStates[playerIdx].popActive) playerStates[playerIdx].popActive = false;
+  if (popFrames[playerIdx]) cancelAnimationFrame(popFrames[playerIdx]);
+  popTimers[playerIdx].forEach(t => clearTimeout(t));
+  popTimers[playerIdx] = [];
+
+  const content = getPanelContent(playerIdx);
+  content.innerHTML = '<div class="pop-panel"></div>';
+  const popPanel = content.querySelector('.pop-panel');
+
+  const { target, targetKey } = pickPopTarget(pack);
+  const needed = difficulty === 'easy' ? 5 : difficulty === 'medium' ? 8 : 12;
+  const cycleTargets = !!pack.popTargetKey;
+
+  playerStates[playerIdx] = {
+    popActive: true,
+    target,
+    targetKey,
+    correctCount: 0,
+    totalNeeded: needed,
+    bubbles: [],
+    pack,
+    cycleTargets,
+  };
+
+  const prompt = document.createElement('div');
+  prompt.className = 'pop-prompt';
+  prompt.innerHTML = pack.popPrompt(target) + ` (0/${needed})`;
+  popPanel.appendChild(prompt);
+
+
+  const rect = popPanel.getBoundingClientRect();
+  popSpawnForPlayer(popPanel, rect, playerIdx);
+  popAnimateForPlayer(popPanel, rect, playerIdx);
+}
+
+function popSpawnForPlayer(container, rect, playerIdx) {
+  const state = playerStates[playerIdx];
+  if (!state || !state.popActive) return;
+  const pack = state.pack;
+  const count = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 5;
+
+  for (let i = 0; i < count; i++) {
+    const isTarget = Math.random() < 0.35;
+    let item, displayText, bubbleKey;
+
+    if (pack.popItems) {
+      const popPool = pack.popItems();
+      if (isTarget) {
+        item = pack.popTargetKey ? parseInt(state.targetKey) : state.target;
+        if (typeof state.target === 'object') item = state.target.answer;
+      } else {
+        item = popPool[Math.floor(Math.random() * popPool.length)];
+      }
+      displayText = pack.popBubbleDisplay ? pack.popBubbleDisplay(item) : pack.display(item);
+      bubbleKey = pack.popItemKey ? pack.popItemKey(item) : String(item);
+    } else {
+      if (isTarget) {
+        item = state.target;
+      } else {
+        item = pack.randomDistractor();
+      }
+      displayText = pack.display(item);
+      bubbleKey = itemKey(pack, item);
+    }
+
+    const size = 55 + Math.random() * 25;
+    const x = 10 + Math.random() * (rect.width - size - 20);
+    const speed = 0.4 + Math.random() * 1.2;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = displayText;
+    bubble.dataset.key = bubbleKey;
+    bubble.style.width = size + 'px';
+    bubble.style.height = size + 'px';
+    bubble.style.left = x + 'px';
+    bubble.style.bottom = '-' + size + 'px';
+    bubble.style.background = randomColor();
+    if (displayText.length > 2) bubble.style.fontSize = '18px';
+    if (displayText.length > 4) bubble.style.fontSize = '14px';
+
+    bubble.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (bubble.dataset.key === state.targetKey) {
+        bubble.classList.add('pop-correct');
+        state.correctCount++;
+        addScore(playerIdx, 1);
+        playCorrect();
+        spawnStars(e.clientX, e.clientY);
+
+        if (state.cycleTargets) {
+          const next = pickPopTarget(pack);
+          state.target = next.target;
+          state.targetKey = next.targetKey;
+        }
+
+        const promptEl = container.querySelector('.pop-prompt');
+        if (promptEl) promptEl.innerHTML = pack.popPrompt(state.target) + ` (${state.correctCount}/${state.totalNeeded})`;
+
+        setTimeout(() => bubble.remove(), 400);
+
+        if (state.correctCount >= state.totalNeeded) {
+          state.popActive = false;
+          setTimeout(() => {
+            spawnConfetti(playerIdx);
+            playComplete();
+            const panel = getPanel(playerIdx);
+            const label = playerMode === 'split' ? `Player ${playerIdx + 1}: ` : '';
+            showPanelFeedback(panel,
+              pack.completeEmoji.pop,
+              label + pack.completeText.pop,
+              `Found all ${state.totalNeeded}!`,
+              () => {
+                if (turnState.active) { onRoundComplete(turnState.currentPlayer); }
+                else { startPopForPlayer(playerIdx, pack); }
+              });
+          }, 500);
+        }
+      } else {
+        bubble.classList.add('pop-wrong');
+        playWrong();
+        setTimeout(() => bubble.classList.remove('pop-wrong'), 400);
+      }
+    });
+
+    container.appendChild(bubble);
+    state.bubbles.push({ el: bubble, y: -size, speed, size });
+  }
+
+  if (state.popActive) {
+    const tid = setTimeout(() => {
+      const freshRect = container.getBoundingClientRect();
+      popSpawnForPlayer(container, freshRect, playerIdx);
+    }, 2000 + Math.random() * 1500);
+    popTimers[playerIdx].push(tid);
+  }
+}
+
+function popAnimateForPlayer(container, rect, playerIdx) {
+  const state = playerStates[playerIdx];
+  if (!state || !state.popActive) return;
+
+  state.bubbles = state.bubbles.filter(b => {
+    b.y += b.speed;
+    b.el.style.bottom = b.y + 'px';
+    if (b.y > rect.height + b.size) {
+      b.el.remove();
+      return false;
+    }
+    return true;
+  });
+
+  popFrames[playerIdx] = requestAnimationFrame(() => {
+    const freshRect = container.getBoundingClientRect();
+    popAnimateForPlayer(container, freshRect, playerIdx);
+  });
+}
+
+
+// ═══════════════════════════════════════════
+// GAME 3: TRACE (Drawing)
+// ═══════════════════════════════════════════
+function startTraceForPlayer(playerIdx, pack) {
+  const content = getPanelContent(playerIdx);
+
+  const allItems = pack.items();
+  const count = difficulty === 'easy' ? 6 : difficulty === 'medium' ? 13 : Math.min(allItems.length, 26);
+  const items = shuffle(allItems).slice(0, count);
+
+  playerStates[playerIdx] = { itemIndex: 0, items, drawing: false, pack };
+
+  content.innerHTML = `
+    <div class="trace-panel">
+      <div class="trace-info"></div>
+      <div class="trace-canvas-wrap">
+        <div class="trace-guide">A</div>
+        <canvas class="trace-canvas"></canvas>
+      </div>
+      <div class="trace-controls">
+        <button class="trace-btn clear-btn">Clear</button>
+        <button class="trace-btn next-btn">Next</button>
+      </div>
+    </div>`;
+
+  const tracePanel = content.querySelector('.trace-panel');
+  initTraceForPlayer(tracePanel, playerIdx);
+  showTraceItemForPlayer(tracePanel, playerIdx);
+}
+
+function showTraceItemForPlayer(tracePanel, playerIdx) {
+  const state = playerStates[playerIdx];
+  const pack = state.pack;
+  const item = state.items[state.itemIndex];
+  const display = pack.traceDisplay(item, difficulty);
+
+  const guide = tracePanel.querySelector('.trace-guide');
+  guide.textContent = display;
+  if (pack.traceGuideSize) guide.style.fontSize = pack.traceGuideSize;
+  else guide.style.fontSize = '';
+
+  tracePanel.querySelector('.trace-info').textContent =
+    `Trace: ${display} (${state.itemIndex + 1}/${state.items.length})`;
+  clearTraceCanvas(tracePanel);
+}
+
+function initTraceForPlayer(tracePanel, playerIdx) {
+  const canvas = tracePanel.querySelector('.trace-canvas');
+  const wrap = tracePanel.querySelector('.trace-canvas-wrap');
+  const ctx = canvas.getContext('2d');
+  const playerColor = playerIdx === 0 ? '#4361ee' : '#e63946';
+
+  function resize() {
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = playerColor;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const state = playerStates[playerIdx];
+
+  canvas.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    canvas.setPointerCapture(e.pointerId);
+    state.drawing = true;
+    const rect = canvas.getBoundingClientRect();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  });
+
+  canvas.addEventListener('pointermove', e => {
+    if (!state.drawing) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+  });
+
+  canvas.addEventListener('pointerup', e => { e.stopPropagation(); state.drawing = false; });
+  canvas.addEventListener('pointercancel', () => { state.drawing = false; });
+
+  tracePanel.querySelector('.clear-btn').addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    clearTraceCanvas(tracePanel);
+  });
+
+
+  tracePanel.querySelector('.next-btn').addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    addScore(playerIdx, 1);
+    playCorrect();
+    state.itemIndex++;
+    const pack = state.pack;
+    if (state.itemIndex >= state.items.length) {
+      spawnConfetti(playerIdx);
+      playComplete();
+      const panel = getPanel(playerIdx);
+      const label = playerMode === 'split' ? `Player ${playerIdx + 1}: ` : '';
+      showPanelFeedback(panel,
+        pack.completeEmoji.trace,
+        label + pack.completeText.trace,
+        `Traced ${state.items.length} items!`,
+        () => {
+          if (turnState.active) { onRoundComplete(turnState.currentPlayer); }
+          else {
+            state.itemIndex = 0;
+            state.items = shuffle(state.items);
+            showTraceItemForPlayer(tracePanel, playerIdx);
+          }
+        });
+    } else {
+      showTraceItemForPlayer(tracePanel, playerIdx);
+    }
+  });
+}
+
+function clearTraceCanvas(tracePanel) {
+  const canvas = tracePanel.querySelector('.trace-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+
+// ═══════════════════════════════════════════
+// GAME 4: ORDER
+// ═══════════════════════════════════════════
+function startOrderForPlayer(playerIdx, pack) {
+  if (!pack.orderSequence) return;
+  const content = getPanelContent(playerIdx);
+
+  const sequence = pack.orderSequence(difficulty);
+  playerStates[playerIdx] = { sequence, currentIndex: 0, pack };
+
+  const slotsHtml = sequence.map((item, i) =>
+    `<div class="order-slot${i === 0 ? ' current' : ''}" data-index="${i}">${i === 0 ? '?' : ''}</div>`
+  ).join('');
+
+  const choicesHtml = shuffle([...sequence]).map(item =>
+    `<button class="order-choice" data-key="${itemKey(pack, item)}" style="background:${randomColor()}">${pack.display(item)}</button>`
+  ).join('');
+
+  content.innerHTML = `
+    <div class="order-panel">
+      <div class="order-progress">${pack.orderLabel(sequence)}</div>
+      <div class="order-sequence">${slotsHtml}</div>
+      <div class="order-choices">${choicesHtml}</div>
+    </div>`;
+
+
+  const orderPanel = content.querySelector('.order-panel');
+
+  orderPanel.querySelectorAll('.order-choice').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const state = playerStates[playerIdx];
+      const pressedKey = btn.dataset.key;
+      const expectedKey = itemKey(pack, state.sequence[state.currentIndex]);
+
+      if (pressedKey === expectedKey) {
+        const slot = orderPanel.querySelector(`.order-slot[data-index="${state.currentIndex}"]`);
+        slot.textContent = pack.display(state.sequence[state.currentIndex]);
+        slot.classList.remove('current');
+        slot.classList.add('filled');
+        btn.classList.add('used');
+        addScore(playerIdx, 1);
+        playCorrect();
+        spawnStars(e.clientX, e.clientY);
+
+        state.currentIndex++;
+
+        if (state.currentIndex >= state.sequence.length) {
+          setTimeout(() => {
+            spawnConfetti(playerIdx);
+            playComplete();
+            const panel = getPanel(playerIdx);
+            const label = playerMode === 'split' ? `Player ${playerIdx + 1}: ` : '';
+            showPanelFeedback(panel,
+              pack.completeEmoji.order,
+              label + pack.completeText.order,
+              `Ordered ${state.sequence.length} items!`,
+              () => {
+                if (turnState.active) { onRoundComplete(turnState.currentPlayer); }
+                else { startOrderForPlayer(playerIdx, pack); }
+              });
+          }, 400);
+        } else {
+          const next = orderPanel.querySelector(`.order-slot[data-index="${state.currentIndex}"]`);
+          next.classList.add('current');
+          next.textContent = '?';
+        }
+      } else {
+        playWrong();
+        btn.style.animation = 'popWrong 0.4s';
+        setTimeout(() => btn.style.animation = '', 400);
+      }
+    });
+  });
+}
+
+
+// ═══════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════
+document.querySelectorAll('#difficulty-selector .pill-btn').forEach(btn => {
+  btn.addEventListener('pointerdown', () => {
+    document.querySelectorAll('#difficulty-selector .pill-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    difficulty = btn.dataset.diff;
+  });
+});
+
+document.querySelectorAll('#player-selector .pill-btn').forEach(btn => {
+  btn.addEventListener('pointerdown', () => {
+    document.querySelectorAll('#player-selector .pill-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    playerMode = btn.dataset.players;
+  });
+});
+
+document.getElementById('home-btn').addEventListener('pointerdown', goHome);
+document.getElementById('subject-back').addEventListener('pointerdown', () => showScreen('grade-screen'));
+document.getElementById('mode-back').addEventListener('pointerdown', () => {
+  buildSubjectScreen();
+  showScreen('subject-screen');
+});
+
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildGradeScreen();
+});
+</script>
+
+</body>
+</html>
